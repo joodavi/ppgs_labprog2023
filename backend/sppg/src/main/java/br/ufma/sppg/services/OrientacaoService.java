@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import br.ufma.sppg.Dto.Orientação.OrientacaoResponse;
+import br.ufma.sppg.dto.Orientação.OrientacaoResponse;
 import br.ufma.sppg.model.Orientacao;
 import br.ufma.sppg.repo.OrientacaoRepository;
 
