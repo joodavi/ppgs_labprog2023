@@ -1,15 +1,16 @@
 package br.ufma.sppg.controller;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.ufma.sppg.dto.OrientacaoResponse;
+import br.ufma.sppg.model.Orientacao;
 import br.ufma.sppg.model.Producao;
 import br.ufma.sppg.model.Tecnica;
 import br.ufma.sppg.service.OrientacaoService;
@@ -17,52 +18,59 @@ import br.ufma.sppg.service.ProducaoService;
 import br.ufma.sppg.service.TecnicaService;
 import br.ufma.sppg.service.exceptions.ServicoRuntimeException;
 
-
 @RestController
-public class DocenteController{
+public class DocenteController {
     @Autowired
-    TecnicaService tecnicaServivce;
-
-    @Autowired
-    ProducaoService producaoServivce;
+    OrientacaoService orientacaoService;
 
     @Autowired
-    OrientacaoService orientacaoServivce;
+    ProducaoService producaoService;
 
-   // @GetMapping
-    public ResponseEntity<?> obterProducoesDeDocente(
-            @RequestParam("docente") Integer idDocente, Integer data1, Integer data2){
+    @Autowired
+    TecnicaService tecnicaService;
 
-        try{
-            List<Producao> producaoDocente = producaoServivce.obterProducoesDocente(idDocente, data1, data2);
-            return ResponseEntity.ok(producaoDocente);
-        }catch (ServicoRuntimeException e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-    /*
     @GetMapping
-    public ResponseEntity<?> obterOrientacoesDeDocente(
-            @RequestParam("docente") Integer idDocente){
-
-        try{
-            ArrayList<OrientacaoResponse> orientacaoDocente = orientacaoServivce.obterOrientacaoDocentes(idDocente); //não vou setar o get mapping ainda
-            return ResponseEntity.ok(orientacaoDocente);
-        }catch (ServicoRuntimeException e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-     */
-
-    public ResponseEntity<?> obterTecnicasDeDocente(
-            @RequestParam("docente") Integer idDocente){
-
-        try{
-            List<Tecnica> tecnicaDocente = tecnicaServivce.obterTecnicasDocente(idDocente); //não vou setar o get mapping ainda
-            return ResponseEntity.ok(tecnicaDocente);
-        }catch (ServicoRuntimeException e){
+    public ResponseEntity<?> obterOrientacaoDocente(
+        @RequestParam("docente") Integer idDocente, Integer dataInicio, Integer dataFim
+    ) {
+        try {
+            List<Orientacao> orientacoes = orientacaoService.obterOrientacaoDocente(idDocente, dataInicio, dataFim);
+            return new ResponseEntity<>(
+                orientacoes,
+                HttpStatus.OK
+            );
+        } catch (ServicoRuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
+    @GetMapping
+    public ResponseEntity<?> obterProducoesDocente(
+        @RequestParam("docente") Integer idProducao, Integer dataInicio, Integer dataFim
+    ) {
+        try {
+            List<Producao> producoes = producaoService.obterProducoesDocente(idProducao, dataInicio, dataFim);
+            return new ResponseEntity<>(
+                producoes,
+                HttpStatus.OK
+            );
+        } catch (ServicoRuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<?> obterTecnicasDocente(
+        @RequestParam("docente") Integer idTecnica, Integer dataInicio, Integer datFim
+    ) {
+        try {
+            Optional<List<Tecnica>> tecnicas = tecnicaService.obterTecnicasDocentePorPeriodo(idTecnica, dataInicio, datFim);
+            return new ResponseEntity<>(
+                tecnicas,
+                HttpStatus.OK
+            );
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
