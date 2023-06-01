@@ -1,5 +1,6 @@
 package br.ufma.sppg.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ import br.ufma.sppg.repo.OrientacaoRepository;
 import br.ufma.sppg.repo.ProducaoRepository;
 import br.ufma.sppg.repo.ProgramaRepository;
 import br.ufma.sppg.repo.TecnicaRepository;
+import br.ufma.sppg.service.exceptions.ServicoRuntimeException;
 
 @Service
 public class OrientacaoService  {
@@ -36,7 +38,7 @@ public class OrientacaoService  {
     private TecnicaRepository tecnicaRepository;
 
     public List<Orientacao> obterOrientacaoPPG(Integer id, Integer anoIni, Integer anoFim) {
-
+        validarPeriodo(anoIni, anoFim);
         validarOrientacoesPpg(id, anoIni, anoFim);
         List<Orientacao> orientacoes = orientacaoRepository.findByPPG(id, anoIni, anoFim).get();
 
@@ -44,12 +46,21 @@ public class OrientacaoService  {
     }
 
     public List<Orientacao> obterOrientacaoDocente(Integer id, Integer anoIni, Integer anoFim) {
-
+        validarPeriodo(anoIni, anoFim);
         validarOrientacoesDoc(id, anoIni, anoFim);
-        List<Orientacao> orientacoes = orientacaoRepository.findByPPG(id, anoIni, anoFim).get();
+        List<Orientacao> orientacoes = orientacaoRepository.findByDocente(id, anoIni, anoFim).get();
 
         return orientacoes;
     }
+
+    // TODO
+    // public List<Orientacao> obterOrientacaoPrograma(Integer id, Integer anoIni, Integer anoFim) {
+    //     validarPeriodo(anoIni, anoFim);
+    //     validarOrientacoesDoc(id, anoIni, anoFim);
+    //     List<Orientacao> orientacoes = orientacaoRepository.obterOrientacoesProgramaPorPeriodo(id, anoIni, anoFim).get();
+
+    //     return orientacoes;
+    // }
 
     public Orientacao associarOrientacaoProducao(Integer idOri, Integer idProd) {
         validarOriProd(idOri, idProd);
@@ -57,7 +68,17 @@ public class OrientacaoService  {
         Orientacao orientacao = orientacaoRepository.findById(idOri).get();
         Producao prod = producaoRepository.findById(idProd).get();
 
-        orientacao.getProducoes().add(prod);
+        if (orientacao.getProducoes() == null) {
+            List<Producao> producoes = new ArrayList<>();
+            orientacao.setProducoes(producoes);
+        }
+
+        if (!orientacao.getProducoes().contains(prod)) {
+            orientacao.getProducoes().add(prod); 
+        } else {
+            throw new ServicoRuntimeException("Produção já associada.");
+        }
+        
         return orientacaoRepository.save(orientacao);
     }
 
@@ -67,7 +88,17 @@ public class OrientacaoService  {
         Orientacao orientacao = orientacaoRepository.findById(idOri).get();
         Tecnica tec = tecnicaRepository.findById(idTec).get();
 
-        orientacao.getTecnicas().add(tec);
+        if (orientacao.getTecnicas() == null) {
+            List<Tecnica> tecnicas = new ArrayList<>();
+            orientacao.setTecnicas(tecnicas);
+        }
+            
+        if (!orientacao.getTecnicas().contains(tec)) {
+            orientacao.getTecnicas().add(tec);
+        } else {
+            throw new ServicoRuntimeException("Técnica já associada.");
+        }
+
         return orientacaoRepository.save(orientacao);
     }
 
@@ -117,6 +148,12 @@ public class OrientacaoService  {
             throw new RuntimeException("Não foram existe tecnica.");
         if (orientacao.isEmpty())
             throw new RuntimeException("Não foram existe orientação.");
+    }
+
+    private void validarPeriodo(Integer anoInicio, Integer anoFim) {
+        if (anoInicio > anoFim) {
+            throw new ServicoRuntimeException("Ano inicial maior que ano fim.");
+        }
     }
 
 }
