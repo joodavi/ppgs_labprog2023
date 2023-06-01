@@ -1,8 +1,5 @@
 package br.ufma.sppg.service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +16,6 @@ import br.ufma.sppg.repo.OrientacaoRepository;
 import br.ufma.sppg.repo.ProducaoRepository;
 import br.ufma.sppg.repo.ProgramaRepository;
 import br.ufma.sppg.repo.TecnicaRepository;
-import br.ufma.sppg.service.exceptions.ServicoRuntimeException;
 
 @Service
 public class OrientacaoService  {
@@ -40,7 +36,7 @@ public class OrientacaoService  {
     private TecnicaRepository tecnicaRepository;
 
     public List<Orientacao> obterOrientacaoPPG(Integer id, Integer anoIni, Integer anoFim) {
-        validarPeriodo(anoIni, anoFim);
+
         validarOrientacoesPpg(id, anoIni, anoFim);
         List<Orientacao> orientacoes = orientacaoRepository.findByPPG(id, anoIni, anoFim).get();
 
@@ -48,20 +44,12 @@ public class OrientacaoService  {
     }
 
     public List<Orientacao> obterOrientacaoDocente(Integer id, Integer anoIni, Integer anoFim) {
-        validarPeriodo(anoIni, anoFim);
+
         validarOrientacoesDoc(id, anoIni, anoFim);
-        List<Orientacao> orientacoes = orientacaoRepository.findByDocente(id, anoIni, anoFim).get();
+        List<Orientacao> orientacoes = orientacaoRepository.findByPPG(id, anoIni, anoFim).get();
 
         return orientacoes;
     }
-
-    // public List<Orientacao> obterOrientacaoPrograma(Integer id, Integer anoIni, Integer anoFim) {
-    //     validarPeriodo(anoIni, anoFim);
-    //     validarOrientacoesDoc(id, anoIni, anoFim);
-    //     List<Orientacao> orientacoes = orientacaoRepository.obterOrientacoesProgramaPorPeriodo(id, anoIni, anoFim).get();
-
-    //     return orientacoes;
-    // }
 
     public Orientacao associarOrientacaoProducao(Integer idOri, Integer idProd) {
         validarOriProd(idOri, idProd);
@@ -69,17 +57,7 @@ public class OrientacaoService  {
         Orientacao orientacao = orientacaoRepository.findById(idOri).get();
         Producao prod = producaoRepository.findById(idProd).get();
 
-        if (orientacao.getProducoes() == null) {
-            List<Producao> producoes = new ArrayList<>();
-            orientacao.setProducoes(producoes);
-        }
-
-        if (!orientacao.getProducoes().contains(prod)) {
-            orientacao.getProducoes().add(prod); 
-        } else {
-            throw new ServicoRuntimeException("Produção já associada.");
-        }
-        
+        orientacao.getProducoes().add(prod);
         return orientacaoRepository.save(orientacao);
     }
 
@@ -89,17 +67,7 @@ public class OrientacaoService  {
         Orientacao orientacao = orientacaoRepository.findById(idOri).get();
         Tecnica tec = tecnicaRepository.findById(idTec).get();
 
-        if (orientacao.getTecnicas() == null) {
-            List<Tecnica> tecnicas = new ArrayList<>();
-            orientacao.setTecnicas(tecnicas);
-        }
-            
-        if (!orientacao.getTecnicas().contains(tec)) {
-            orientacao.getTecnicas().add(tec);
-        } else {
-            throw new ServicoRuntimeException("Técnica já associada.");
-        }
-
+        orientacao.getTecnicas().add(tec);
         return orientacaoRepository.save(orientacao);
     }
 
@@ -110,9 +78,9 @@ public class OrientacaoService  {
         Optional<List<Orientacao>> orientacoes = orientacaoRepository.findByPPG(idPrograma,  anoIni, anoFim);
         
         if (programa.isEmpty())
-            throw new ServicoRuntimeException("Não foram encontrados  programas com este Id.");
+            throw new RuntimeException("Não foram encontrados  programas com este Id.");
         if (orientacoes.isEmpty())
-            throw new ServicoRuntimeException("Não foram encontradas orientações para este docente.");
+            throw new RuntimeException("Não foram encontradas orientações para este docente.");
     }
 
     private void validarOrientacoesDoc(Integer idDocente, Integer anoIni, Integer anoFim) {
@@ -122,9 +90,9 @@ public class OrientacaoService  {
         Optional<List<Orientacao>> orientacoes = orientacaoRepository.findByDocente(idDocente, anoIni, anoFim);
 
         if (docente.isEmpty())
-            throw new ServicoRuntimeException("Não foram encontrados  programas com este Id.");
+            throw new RuntimeException("Não foram encontrados  programas com este Id.");
         if (orientacoes.isEmpty())
-            throw new ServicoRuntimeException("Não foram encontradas orientações para este docente.");
+            throw new RuntimeException("Não foram encontradas orientações para este docente.");
     }
 
     private void validarOriProd(Integer idOri, Integer idProd) {
@@ -134,9 +102,9 @@ public class OrientacaoService  {
         Optional<Orientacao> orientacao = orientacaoRepository.findById(idOri);
 
         if (prod.isEmpty())
-            throw new ServicoRuntimeException("Não foram existe produção.");
+            throw new RuntimeException("Não foram existe produção.");
         if (orientacao.isEmpty())
-            throw new ServicoRuntimeException("Não foram existe orientação.");
+            throw new RuntimeException("Não foram existe orientação.");
     }
 
     private void validarOriTec(Integer idOri, Integer idTec) {
@@ -146,15 +114,9 @@ public class OrientacaoService  {
         Optional<Orientacao> orientacao = orientacaoRepository.findById(idOri);
 
         if (tec.isEmpty())
-            throw new ServicoRuntimeException("Não foram existe tecnica.");
+            throw new RuntimeException("Não foram existe tecnica.");
         if (orientacao.isEmpty())
-            throw new ServicoRuntimeException("Não foram existe orientação.");
-    }
-
-    private void validarPeriodo(Integer anoInicio, Integer anoFim) {
-        if (anoInicio > anoFim) {
-            throw new ServicoRuntimeException("Ano inicial maior que ano fim.");
-        }
+            throw new RuntimeException("Não foram existe orientação.");
     }
 
 }
