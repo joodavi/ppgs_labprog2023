@@ -17,11 +17,13 @@ import br.ufma.sppg.model.Tecnica;
 import br.ufma.sppg.repo.DocenteRepository;
 import br.ufma.sppg.repo.OrientacaoRepository;
 import br.ufma.sppg.repo.ProducaoRepository;
+import br.ufma.sppg.repo.ProgramaRepository;
 import br.ufma.sppg.repo.TecnicaRepository;
 import br.ufma.sppg.service.exceptions.ServicoRuntimeException;
 import jakarta.transaction.Transactional;
 
 @SpringBootTest
+@Transactional
 public class OrientacaoServiceTest {
     @Autowired
     OrientacaoService service;
@@ -38,22 +40,13 @@ public class OrientacaoServiceTest {
     @Autowired
     TecnicaRepository tecnicaRepository;
 
+    @Autowired
+    ProgramaRepository programaRepository;
+
     @Test
-    @Transactional
     public void deveInformarPeriodoValido() {
         //Cenario
         Docente docente = Docente.builder().lattes("123456").nome("Docente 1").dataAtualizacao(new Date()).build();
-
-        Orientacao orientacao1 = Orientacao.builder().tipo("Tipo 1").discente("Discente 1").titulo("Titulo 1").ano(2019).modalidade("Modalidade 1").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
-
-        Orientacao orientacao2 = Orientacao.builder().tipo("Tipo 2").discente("Discente 2").titulo("Titulo 2").ano(2020).modalidade("Modalidade 2").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
-
-        Orientacao orientacao3 = Orientacao.builder().tipo("Tipo 3").discente("Discente 3").titulo("Titulo 3").ano(2021).modalidade("Modalidade 3").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
-
-        Orientacao orientacao4 = Orientacao.builder().tipo("Tipo 4").discente("Discente 4").titulo("Titulo 4").ano(2022).modalidade("Modalidade 4").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
-
-        Orientacao orientacao5 = Orientacao.builder().tipo("Tipo 5").discente("Discente 5").titulo("Titulo 5").ano(2023).modalidade("Modalidade 5").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
-
         Docente docenteSalvo =  docenteRepository.save(docente);
 
         //Acao
@@ -63,7 +56,6 @@ public class OrientacaoServiceTest {
     }
 
     @Test
-    @Transactional
     public void deveObterOrientacoesDocentePorPeriodo() {
         // Cenario
         Docente docente = Docente.builder().lattes("123456").nome("Docente 1").dataAtualizacao(new Date()).build();
@@ -74,68 +66,60 @@ public class OrientacaoServiceTest {
 
         Orientacao orientacao3 = Orientacao.builder().tipo("Tipo 3").discente("Discente 3").titulo("Titulo 3").ano(2021).modalidade("Modalidade 3").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
 
-        Orientacao orientacao4 = Orientacao.builder().tipo("Tipo 4").discente("Discente 4").titulo("Titulo 4").ano(2022).modalidade("Modalidade 4").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
+        Orientacao orientacaoSalvo1 = repository.save(orientacao1);
+        Orientacao orientacaoSalvo2 = repository.save(orientacao2);
+        Orientacao orientacaoSalvo3 = repository.save(orientacao3);
 
-        Orientacao orientacao5 = Orientacao.builder().tipo("Tipo 5").discente("Discente 5").titulo("Titulo 5").ano(2023).modalidade("Modalidade 5").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
+        List<Orientacao> orientacaos = new ArrayList<>();
+        orientacaos.add(orientacaoSalvo1);
+        orientacaos.add(orientacaoSalvo2);
+        orientacaos.add(orientacaoSalvo3);
 
         Docente docenteSalvo =  docenteRepository.save(docente);
+
+        //Acao
+        List<Orientacao> orientacoes = service.obterOrientacaoDocente(docenteSalvo.getId(), 2019, 2020);
+
+        Assertions.assertNotNull(orientacoes);
+        Assertions.assertEquals(2, orientacoes.size());
+    }
+
+    @Test
+    public void deveObterOrientacoesProgramaPorPeriodo() {
+        // Cenario
+        Docente docente = Docente.builder().lattes("123456").nome("Docente 1").dataAtualizacao(new Date()).build();
+
+        Orientacao orientacao1 = Orientacao.builder().tipo("Tipo 1").discente("Discente 1").titulo("Titulo 1").ano(2019).modalidade("Modalidade 1").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
+
+        Orientacao orientacao2 = Orientacao.builder().tipo("Tipo 2").discente("Discente 2").titulo("Titulo 2").ano(2020).modalidade("Modalidade 2").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
+
+        Orientacao orientacao3 = Orientacao.builder().tipo("Tipo 3").discente("Discente 3").titulo("Titulo 3").ano(2021).modalidade("Modalidade 3").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
 
         Orientacao orientacaoSalvo1 = repository.save(orientacao1);
         Orientacao orientacaoSalvo2 = repository.save(orientacao2);
         Orientacao orientacaoSalvo3 = repository.save(orientacao3);
-        Orientacao orientacaoSalvo4 = repository.save(orientacao4);
-        Orientacao orientacaoSalvo5 = repository.save(orientacao5);
 
-        //Acao
-        List<Orientacao> orientacoes = service.obterOrientacaoDocente(docente.getId(), 2020, 2022);
+        List<Orientacao> orientacaos = new ArrayList<>();
+        orientacaos.add(orientacaoSalvo1);
+        orientacaos.add(orientacaoSalvo2);
+        orientacaos.add(orientacaoSalvo3);
 
-        Assertions.assertNotNull(orientacoes);
-        Assertions.assertEquals(3, orientacoes.size());
-        Assertions.assertEquals(orientacaoSalvo2.getId(), orientacoes.get(0).getId());
-        Assertions.assertEquals(orientacaoSalvo3.getOrientador().getLattes(), docenteSalvo.getLattes());
+        Docente docenteSalvo =  docenteRepository.save(docente);
+        List<Docente> docentes = new ArrayList<>();
+        docentes.add(docenteSalvo);
+
+        Programa programa = Programa.builder().nome("Programa 1").docentes(docentes).build();
+        Programa programaSalvo = programaRepository.save(programa);
+
+        // Ação
+        List<Orientacao> orientacaosBusca = service.obterOrientacaoPPG(programaSalvo.getId(), 2019, 2020);
+        
+        // Teste
+        Assertions.assertNotNull(programa);
+        Assertions.assertEquals(2, orientacaosBusca.size());
     }
 
-    // @Test
-    // @Transactional
-    // public void deveObterOrientacoesProgramaPorPeriodo() {
-    //     // Cenario
-    //     Programa programa = Programa.builder().nome("Programa 1").build();
-    //     List<Programa> programas = new ArrayList<>();
-    //     programas.add(programa);
-
-    //     Docente docente = Docente.builder().lattes("123456").nome("Docente 1").dataAtualizacao(new Date()).build();
-
-    //     docente.setProgramas(programas);
-
-    //     Orientacao orientacao1 = Orientacao.builder().tipo("Tipo 1").discente("Discente 1").titulo("Titulo 1").ano(2019).modalidade("Modalidade 1").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
-
-    //     Orientacao orientacao2 = Orientacao.builder().tipo("Tipo 2").discente("Discente 2").titulo("Titulo 2").ano(2020).modalidade("Modalidade 2").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
-
-    //     Orientacao orientacao3 = Orientacao.builder().tipo("Tipo 3").discente("Discente 3").titulo("Titulo 3").ano(2021).modalidade("Modalidade 3").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
-
-    //     Orientacao orientacao4 = Orientacao.builder().tipo("Tipo 4").discente("Discente 4").titulo("Titulo 4").ano(2022).modalidade("Modalidade 4").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
-
-    //     Orientacao orientacao5 = Orientacao.builder().tipo("Tipo 5").discente("Discente 5").titulo("Titulo 5").ano(2023).modalidade("Modalidade 5").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").orientador(docente).build();
-
-    //     Docente docenteSalvo =  docenteRepository.save(docente);
-
-    //     Orientacao orientacaoSalvo1 = repository.save(orientacao1);
-    //     Orientacao orientacaoSalvo2 = repository.save(orientacao2);
-    //     Orientacao orientacaoSalvo3 = repository.save(orientacao3);
-    //     Orientacao orientacaoSalvo4 = repository.save(orientacao4);
-    //     Orientacao orientacaoSalvo5 = repository.save(orientacao5);
-
-    //     //Acao
-    //     List<Orientacao> orientacoes = service.obterOrientacaoPrograma(docente.getId(), 2020, 2022);
-
-    //     Assertions.assertNotNull(orientacoes);
-    //     Assertions.assertEquals(3, orientacoes.size());
-    //     Assertions.assertEquals(orientacaoSalvo2.getId(), orientacoes.get(0).getId());
-    //     Assertions.assertEquals(orientacaoSalvo3.getOrientador().getLattes(), docenteSalvo.getLattes());
-    // }
-
     @Test
-    @Transactional
     public void deveAssociarOrientacaoTecnica() {
         // Cenario
         Orientacao orientacao = Orientacao.builder().tipo("Tipo 1").discente("Discente 1").titulo("Titulo 1").ano(2019).modalidade("Modalidade 1").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").build();
@@ -152,7 +136,6 @@ public class OrientacaoServiceTest {
     }
 
     @Test
-    @Transactional
     public void deveAssociarOrientacaoProducao() {
         // Cenario
         Orientacao orientacao = Orientacao.builder().tipo("Tipo 1").discente("Discente 1").titulo("Titulo 1").ano(2019).modalidade("Modalidade 1").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").build();
@@ -170,7 +153,6 @@ public class OrientacaoServiceTest {
     }
 
     @Test
-    @Transactional
     public void naoDeveAssociarOrientacaoProducaoRepetido() {
         // Cenario
         Orientacao orientacao = Orientacao.builder().tipo("Tipo 1").discente("Discente 1").titulo("Titulo 1").ano(2019).modalidade("Modalidade 1").instituicao("UFMA").curso("Ciencia da Computacao").status("Ativo").build();
@@ -192,7 +174,6 @@ public class OrientacaoServiceTest {
         }, "Produção já associada.");
     }
     @Test
-    @Transactional
     public void naoDeveAssociarOrientacaoTecnicaRepetido() {
         // Cenario
         repository.deleteAll();
