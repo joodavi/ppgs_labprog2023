@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +23,8 @@ import br.ufma.sppg.service.ProgramaService;
 import br.ufma.sppg.service.exceptions.ServicoRuntimeException;
 
 @RestController
-@RequestMapping(value = "/api/v1/qualis")
+@RequestMapping(value = "/api/qualis")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class QualisController {
 
     @Autowired
@@ -54,7 +56,7 @@ public class QualisController {
     }
 
     // PASSA O ANO
-    @GetMapping(value = "/indice/{idProg}/filter")
+    @GetMapping(value = "/indice/{idProg}/{anoIni}/{anoFim}")
     public ResponseEntity obterIndicesCapes(@PathVariable Integer idProg, @RequestParam Integer anoIni,
             @RequestParam Integer anoFim) {
 
