@@ -159,19 +159,9 @@ public class DocenteService {
         if(repository.existsById(docente.getId())){
             throw new ServicoRuntimeException("Id já registrado");
         }
-        /*
-        if(docente.getOrientacoes() == null){
-            throw new ServicoRuntimeException("Lista de orientações inexistente");
-        }
-        if(docente.getTecnicas() == null){
-            throw new ServicoRuntimeException("Lista de tecnicas inexistente");
-        }
-        if(docente.getProducoes() == null){
-            throw new ServicoRuntimeException("Lista de produções inexistente");
-        }
-        if(docente.getProgramas() == null){
-            throw new ServicoRuntimeException("Lista de programas inexistente");
-        }
-        */
+    }
+
+    public Optional<Docente> obterDocentePorId(Integer idDocente) {
+        return repository.findById(idDocente);
     }
 }

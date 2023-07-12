@@ -1,6 +1,7 @@
 package br.ufma.sppg.controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,20 +58,18 @@ public class QualisController {
 
     // PASSA O ANO
     @GetMapping(value = "/indice/{idProg}/{anoIni}/{anoFim}")
-    public ResponseEntity obterIndicesCapes(@PathVariable Integer idProg, @RequestParam Integer anoIni,
-            @RequestParam Integer anoFim) {
+    public ResponseEntity obterIndicesCapes(@PathVariable Integer idProg, @PathVariable Integer anoIni,
+            @PathVariable Integer anoFim) {
 
         Indice indice;
-        List<Producao> producoes;
 
         try {
             indice = service.obterProducaoIndices(idProg, anoIni, anoFim);
-            producoes = service.obterProducoes(idProg, anoIni, anoFim);
         } catch (ServicoRuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
-        IndiceQualisDTO res = IndiceQualisDTO.builder().indice(indice).producoes(producoes).build();
+        IndiceQualisDTO res = IndiceQualisDTO.builder().indice(indice).build();
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
@@ -126,9 +125,9 @@ public class QualisController {
     }
 
     // PASSA O ANO
-    @GetMapping(value = "/stats/{idProg}/filter")
-    public ResponseEntity obterEstatisticas(@PathVariable Integer idProg, @RequestParam Integer anoIni,
-            @RequestParam Integer anoFim) {
+    @GetMapping(value = "/stats/{idProg}/{anoIni}/{anoFim}")
+    public ResponseEntity obterEstatisticas(@PathVariable Integer idProg, @PathVariable Integer anoIni,
+            @PathVariable Integer anoFim) {
 
         QualisStatsDTO stats;
 
@@ -164,5 +163,39 @@ public class QualisController {
         }
 
         return new ResponseEntity<QualisStatsDTO>(stats, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/{idPrograma}/{anoIni}/{anoFim}")
+    public ResponseEntity obterQualisPorAno(
+            @PathVariable Integer idPrograma,
+            @PathVariable Integer anoIni, 
+            @PathVariable Integer anoFim) {
+        try {
+            List<Producao> producoes = service.obterProducoes(idPrograma, anoIni, anoFim);
+            List<List<Integer>> qualis = new ArrayList<List<Integer>>();
+            for (int i = 0;i<4;i++) {
+                qualis.add(new ArrayList<Integer>(Collections.nCopies(anoFim-anoIni+1, 0)));
+            }
+            for (Producao prod : producoes) {
+                if (prod.getAno()>=anoIni && prod.getAno()<=anoFim) {
+                    if (prod.getTipo()!=null){
+                            if (prod.getQualis() != null) {
+                                if (prod.getQualis().equals("A1")) {
+                                    qualis.get(0).set(anoFim-prod.getAno(), qualis.get(0).get(anoFim-prod.getAno())+1);
+                                } else if (prod.getQualis().equals("A2")) {
+                                    qualis.get(1).set(anoFim-prod.getAno(), qualis.get(1).get(anoFim-prod.getAno())+1);
+                                } else if (prod.getQualis().equals("A3")) {
+                                    qualis.get(2).set(anoFim-prod.getAno(), qualis.get(2).get(anoFim-prod.getAno())+1);
+                                } else if (prod.getQualis().equals("A4")) {
+                                    qualis.get(3).set(anoFim-prod.getAno(), qualis.get(3).get(anoFim-prod.getAno())+1);
+                                }
+                            }
+                        }
+                    }   
+                }
+            return ResponseEntity.ok(qualis);
+        } catch (ServicoRuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

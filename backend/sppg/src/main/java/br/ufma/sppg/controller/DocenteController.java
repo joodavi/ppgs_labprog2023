@@ -1,6 +1,7 @@
 package br.ufma.sppg.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,16 @@ public class DocenteController {
     @Autowired
     DocenteService service;
 
+    @GetMapping("/obterDocente/{idDocente}")
+    public ResponseEntity obterDocentePorId(@PathVariable(value = "idDocente", required = true) Integer idDocente) {
+        try {
+            Optional<Docente> docente = service.obterDocentePorId(idDocente);
+            return ResponseEntity.ok(docente);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/obterDocentes")
     public ResponseEntity obterDocentes() {
         try {
@@ -48,7 +59,8 @@ public class DocenteController {
     }
 
     @GetMapping("/obterProducoes/{id}/{anoIni}/{anoFim}")
-    public ResponseEntity<?> obterProducoesDeDocente(@PathVariable(value = "id", required = true) Integer idDocente,
+    public ResponseEntity<?> obterProducoesDeDocente(
+            @PathVariable(value = "id", required = true) Integer idDocente,
             @PathVariable(value = "anoIni", required = true) Integer anoIni,
             @PathVariable(value = "anoFim", required = true) Integer anoFim) {
 

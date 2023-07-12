@@ -5,11 +5,25 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import React, { useEffect, useState } from 'react';
 import { Input, Select } from '@chakra-ui/react'
 import axios from 'axios';
-import connection from '../connection';
+import { Link } from 'react-router-dom';
+import setupGraphics from '../setupGraphics';
 
 interface ProgramaData {
     id: number;
     nome: string;
+}
+
+interface DocentesProducoes {
+    docente: {
+        id: number;
+        lattes: string;
+        nome: string;
+    };
+    qualis: number[];
+}
+
+interface DadosGrafico {
+    [index: number]: number[];
 }
 
 ChartJS.register(
@@ -21,102 +35,10 @@ ChartJS.register(
     Legend
 );
 
-const dados = {
-    labels: ['2019', '2020', '2021', '2022', '2023'],
-    datasets: [
-        {
-            label: 'A1',
-            data: [17, 26, 30, 33, 9],
-            backgroundColor: '#4dc9f6',
-        },
-        {
-            label: 'A2',
-            data: [6, 17, 13, 8, 0],
-            backgroundColor: '#f67019'
-        },
-        {
-            label: 'A3',
-            data: [20, 46, 24, 26, 12],
-            backgroundColor: '#537bc4'
-        },
-        {
-            label: 'A4',
-            data: [55, 25, 49, 30, 0],
-            backgroundColor: '#acc236'
-        },
-    ]
-}
-
-const options = {
-    plugins: {
-        title: {
-            display: true,
-            text: 'Produção vs Qualis',
-            color: '#fff',
-            weight: 500,
-            font: {
-                size: 18
-            },
-        },
-    },
-    responsive: true,
-    scales: {
-        x: {
-            stacked: true,
-        },
-        y: {
-            stacked: true,
-        },
-    }
-};
-
-const docentes = [
-    {
-        docente: 'Alexandre César Muniz de Oliveira', A1: 1, A2: 0, A3: 1, A4: 0, B1: 2, B2: 0, B3: 0, B4: 0
-    },
-    {
-        docente: 'Anselmo Cardoso de Paiva', A1: 22, A2: 4, A3: 3, A4: 1, B1: 1, B2: 1, B3: 2, B4: 3
-    },
-    {
-        docente: 'Carlos de Salles Soares Neto', A1: 1, A2: 1, A3: 0, A4: 1, B1: 0, B2: 0, B3: 0, B4: 0
-    },
-    {
-        docente: 'Geraldo Braz Júnior', A1: 10, A2: 3, A3: 2, A4: 0, B1: 0, B2: 1, B3: 2, B4: 2
-    }
-]
-
-const colunasTabela = (
-    <tr className="border-b-2">
-        <td className='bg-slate-600 p-4'>Docentes</td>
-        <td className='bg-slate-700 p-4 text-center'>A1</td>
-        <td className='bg-slate-600 p-4 text-center'>A2</td>
-        <td className='bg-slate-700 p-4 text-center'>A3</td>
-        <td className='bg-slate-600 p-4 text-center'>A4</td>
-        <td className='bg-slate-700 p-4 text-center'>B1</td>
-        <td className='bg-slate-600 p-4 text-center'>B2</td>
-        <td className='bg-slate-700 p-4 text-center'>B3</td>
-        <td className='bg-slate-600 p-4 text-center'>B4</td>
-    </tr>
-)
-
-const conteudoTabela = docentes.map((i) =>
-    <tr>
-        <td className='bg-slate-600 p-4'>{i.docente}</td>
-        <td className='bg-slate-700 p-4 text-right'>{i.A1}</td>
-        <td className='bg-slate-600 p-4 text-right'>{i.A2}</td>
-        <td className='bg-slate-700 p-4 text-right'>{i.A3}</td>
-        <td className='bg-slate-600 p-4 text-right'>{i.A4}</td>
-        <td className='bg-slate-700 p-4 text-right'>{i.B1}</td>
-        <td className='bg-slate-600 p-4 text-right'>{i.B2}</td>
-        <td className='bg-slate-700 p-4 text-right'>{i.B3}</td>
-        <td className='bg-slate-600 p-4 text-right'>{i.B4}</td>
-        <td className='bg-slate-700 p-4 text-center hover:bg-slate-800'> <a href="/docente" className='underline'>Detalhar...</a> </td>
-    </tr>
-)
-
 export default function Programas() {
     const [selectedPrograma, setProgramaSelected] = useState("")
     const [programas, setProgramas] = useState<ProgramaData[]>([])
+    const [docentesProducoes, setDocentesProducoes] = useState<DocentesProducoes[]>([])
 
     // set indices
     const [iGeral, setIGeral] = useState(0)
@@ -126,13 +48,19 @@ export default function Programas() {
     // set stats
     const [producoesStats, setProducoesStats] = useState(0)
 
+    // set dados grafico programa producoes
+    const [graficoProgramaProducoes, setGraficoProgramaProducoes] = useState<DadosGrafico>([])
+
     // set filter
-    const [filterProgramaId] = useState(15)
-    const [anoInicial, setAnoInicial] = useState(1987)
+    const [programaId, setProgramaId] = useState(15)
+    const [anoInicial, setAnoInicial] = useState(2020)
     const [anoFinal, setAnoFinal] = useState(2023)
 
+    // set props grafico
+    const options = setupGraphics.options
+
     // obtendo programas
-    useEffect(() => {
+    async function getProgramas() {
         const dataPrograma = async () => {
             try {
                 const response = await axios.get('http://localhost:8080/api/programa/obterProgramas')
@@ -144,13 +72,13 @@ export default function Programas() {
         }
 
         dataPrograma()
-    }, [])
+    }
 
     // obtendo indices
-    useEffect(() => {
+    async function getIndices() {
         const dataIndices = async () => {
             try {
-                const response = await axios.get(`http://localhost:8080/api/qualis/indice/${filterProgramaId}`)
+                const response = await axios.get(`http://localhost:8080/api/qualis/indice/${programaId}/${anoInicial}/${anoFinal}`)
 
                 setIGeral(response.data.indice.indiceGeral.toFixed(2))
                 setIResttrito(response.data.indice.indiceRest.toFixed(2))
@@ -161,13 +89,13 @@ export default function Programas() {
         }
 
         dataIndices()
-    }, [])
+    }
 
     // obtendo stats
-    useEffect(() => {
+    async function getStatsProducoes() {
         const dataProducoes = async () => {
             try {
-                const response = await axios.get(`http://localhost:8080/api/qualis/stats/${filterProgramaId}`)
+                const response = await axios.get(`http://localhost:8080/api/qualis/stats/${programaId}/${anoInicial}/${anoFinal}`)
 
                 setProducoesStats(response.data.producoes)
             } catch (e) {
@@ -176,8 +104,82 @@ export default function Programas() {
         }
 
         dataProducoes()
-    })
+    }
 
+    // obtendo dados grafico
+    async function getDadosGraficoProgramaProducoes() {
+        const dataGraficoProducaoQualis = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8080/api/qualis/${programaId}/${anoInicial}/${anoFinal}`)
+
+                setGraficoProgramaProducoes(response.data)
+            } catch (e) {
+                console.log("Erro", e)
+            }
+        }
+
+        dataGraficoProducaoQualis()
+    }
+
+    // obtendo dados professores
+    async function getDadosProfessoresProducoes() {
+        const dataProfessoresProducoes = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8080/api/programa/obterProducoes/${anoInicial}/${anoFinal}`)
+
+                setDocentesProducoes(response.data)
+            } catch (e) {
+                console.log("Erro", e)
+            }
+        }
+
+        dataProfessoresProducoes()
+    }
+
+    useEffect(() => {
+        getStatsProducoes()
+        getDadosProfessoresProducoes()
+        getIndices()
+        getProgramas()
+        getDadosGraficoProgramaProducoes()
+    }, [anoInicial, anoFinal])
+
+    const dadosOrdenados = docentesProducoes.slice().sort((a, b) =>
+        a.docente.nome.localeCompare(b.docente.nome)
+    )
+
+    const conteudoTabela = (
+        <>
+            <thead>
+                <tr className="border-b-2">
+                    <td className='bg-slate-700 p-4'>Docentes</td>
+                    <td className='bg-slate-700 p-4 text-center'>A1</td>
+                    <td className='bg-slate-700 p-4 text-center'>A2</td>
+                    <td className='bg-slate-700 p-4 text-center'>A3</td>
+                    <td className='bg-slate-700 p-4 text-center'>A4</td>
+                    <td className='bg-slate-700 p-4 text-center'>B1</td>
+                    <td className='bg-slate-700 p-4 text-center'>B2</td>
+                    <td className='bg-slate-700 p-4 text-center'>B3</td>
+                    <td className='bg-slate-700 p-4 text-center border-r-2'>B4</td>
+                </tr>
+            </thead>
+            <tbody>
+                {dadosOrdenados.map((item, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-slate-600' : 'bg-slate-700'}>
+                        <td className='p-4'>{item.docente.nome}</td>
+                        {item.qualis.map((qualisItem) => (
+                            <td className='text-center'>{qualisItem}</td>
+                        ))}
+                        <td className='border-l-2 text-center'>
+                            <Link to={`docente`} className='underline'>
+                                Detalhar...
+                            </Link>
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </>
+    )
 
     function handleSelectedPrograma(event: any) {
         setProgramaSelected(event.target.value)
@@ -191,11 +193,54 @@ export default function Programas() {
         setAnoFinal(event.target.value)
     }
 
+    function getLabels() {
+        var labels = []
+        let anoIni = anoInicial
+        let anoFim = anoFinal
+
+        while (anoIni <= anoFim) {
+            labels.push(anoIni)
+            anoIni++
+        }
+
+        labels.reverse()
+        return labels
+    }
+
     function handleSubmit(event: React.FormEvent) {
         event.preventDefault()
-
-        
+        getStatsProducoes()
+        getDadosProfessoresProducoes()
+        getIndices()
+        getProgramas()
     }
+
+    const dados = {
+        labels: getLabels(),
+        datasets: [
+            {
+                label: 'A1',
+                data: graficoProgramaProducoes[0],
+                backgroundColor: '#4dc9f6',
+            },
+            {
+                label: 'A2',
+                data: graficoProgramaProducoes[1],
+                backgroundColor: '#f67019'
+            },
+            {
+                label: 'A3',
+                data: graficoProgramaProducoes[2],
+                backgroundColor: '#537bc4'
+            },
+            {
+                label: 'A4',
+                data: graficoProgramaProducoes[3],
+                backgroundColor: '#acc236'
+            },
+        ]
+    }
+
 
     return (
         <div className='bg-slate-800 flex flex-col items-center h-max w-full py-4'>
@@ -227,13 +272,13 @@ export default function Programas() {
                             </div>
                             <div className='flex flex-col mr-4'>
                                 <label htmlFor="" className='mb-2 text-white'>Ano Inicial</label>
-                                <Input variant='filled' placeholder='2019' min={1987} max={2023} value={anoInicial} onChange={handleAnoInicial}
-                                className="w-full bg-slate-700 border text-white border-gray-300 p-2 rounded" />
+                                <Input variant='filled' placeholder='1990' min={1990} max={2023} value={anoInicial} onChange={handleAnoInicial}
+                                    className="w-full bg-slate-700 border text-white border-gray-300 p-2 rounded" />
                             </div>
                             <div className='flex flex-col mr-4'>
                                 <label htmlFor="" className='mb-2 text-white'>Ano Final</label>
-                                <Input variant='filled' placeholder='2023' min={1987} max={2023} value={anoFinal}
-                                className="w-full bg-slate-700 border text-white border-gray-300 p-2 rounded" />
+                                <Input variant='filled' placeholder='2023' min={1987} max={2023} value={anoFinal} onChange={handleAnoFinal}
+                                    className="w-full bg-slate-700 border text-white border-gray-300 p-2 rounded" />
                             </div>
                             <button
                                 type="submit"
@@ -251,7 +296,7 @@ export default function Programas() {
                         <Indicadores color='bg-yellow-600' quantidade={iNaoRestrito} titulo='I Não Restrito' />
                     </div>
                     <Bar data={dados} options={options} />
-                    <Tabela title='Docentes' colunasTabela={colunasTabela} conteudoTabela={conteudoTabela} />
+                    <Tabela title='Docentes' conteudoTabela={conteudoTabela} />
                 </div>
             </div>
         </div>
