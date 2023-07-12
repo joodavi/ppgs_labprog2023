@@ -6,9 +6,9 @@ import br.ufma.sppg.model.Docente;
 import br.ufma.sppg.model.Producao;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 @AllArgsConstructor
 @Builder
 public class DocenteProducaoDTO {

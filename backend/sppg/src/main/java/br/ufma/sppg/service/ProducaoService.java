@@ -41,15 +41,15 @@ public class ProducaoService {
     OrientacaoRepository oriRepo;
 
     //TODO: checar tempo de processamento
-    public List<Producao>obterProducoesPPG(Integer idPrograma, Integer data1, Integer data2){
+    public List<Producao>obterProducoesPPG(Integer idPrograma, Integer anoIni, Integer anoFim){
 
 
-        //É Presumido que o usuário coloque em data1 o valor mais baixo e em data2 o valor mais alto como por exemplo
-        //data1=2016, data2=2023. Esta função verifica se a ordem esperada foi trocada e ajusta para que não ocorra erros
-        if (data1 >= data2){
-            Integer data = data2;
-            data2 = data1;
-            data1 = data;
+        //É Presumido que o usuário coloque em anoIni o valor mais baixo e em anoFim o valor mais alto como por exemplo
+        //anoIni=2016, anoFim=2023. Esta função verifica se a ordem esperada foi trocada e ajusta para que não ocorra erros
+        if (anoIni >= anoFim){
+            Integer data = anoFim;
+            anoFim = anoIni;
+            anoIni = data;
         }
 
         Optional<Programa> programa = progRepo.findById(idPrograma);
@@ -68,8 +68,8 @@ public class ProducaoService {
                 && !progRepo.getReferenceById(idPrograma).getDocentes().get(i).getProducoes().isEmpty())
                 {
                     for(int j = 0; j< progRepo.getReferenceById(idPrograma).getDocentes().get(i).getProducoes().size(); j++){
-                        if(progRepo.getReferenceById(idPrograma).getDocentes().get(i).getProducoes().get(j).getAno() >= data1
-                        && progRepo.getReferenceById(idPrograma).getDocentes().get(i).getProducoes().get(j).getAno() <= data2){
+                        if(progRepo.getReferenceById(idPrograma).getDocentes().get(i).getProducoes().get(j).getAno() >= anoIni
+                        && progRepo.getReferenceById(idPrograma).getDocentes().get(i).getProducoes().get(j).getAno() <= anoFim){
                             producoes.add(progRepo.getReferenceById(idPrograma).getDocentes().get(i).getProducoes().get(j));
                         }
                     }
@@ -84,14 +84,14 @@ public class ProducaoService {
 
     };
 
-    public List<Producao>obterProducoesDocente(Integer idDocente, Integer data1, Integer data2){
+    public List<Producao>obterProducoesDocente(Integer idDocente, Integer anoIni, Integer anoFim){
 
-        //É Presumido que o usuário coloque em data1 o valor mais baixo e em data2 o valor mais alto como por exemplo
-        //data1=2016, data2=2023. Esta função verifica se a ordem esperada foi trocada e ajusta para que não ocorra erros
-        if (data1 >= data2){
-            Integer data = data2;
-            data2 = data1;
-            data1 = data;
+        //É Presumido que o usuário coloque em anoIni o valor mais baixo e em anoFim o valor mais alto como por exemplo
+        //anoIni=2016, anoFim=2023. Esta função verifica se a ordem esperada foi trocada e ajusta para que não ocorra erros
+        if (anoIni >= anoFim){
+            Integer data = anoFim;
+            anoFim = anoIni;
+            anoIni = data;
         }
 
         Optional<Docente> docente = docRepo.findById(idDocente);
@@ -104,8 +104,8 @@ public class ProducaoService {
             ArrayList<Producao> producoes = new ArrayList<>();
 
             for(int i = 0; i < docRepo.getReferenceById(idDocente).getProducoes().size(); i++){
-                if(docRepo.getReferenceById(idDocente).getProducoes().get(i).getAno() >= data1
-                && docRepo.getReferenceById(idDocente).getProducoes().get(i).getAno() <= data2){
+                if(docRepo.getReferenceById(idDocente).getProducoes().get(i).getAno() >= anoIni
+                && docRepo.getReferenceById(idDocente).getProducoes().get(i).getAno() <= anoFim){
                     producoes.add(docRepo.getReferenceById(idDocente).getProducoes().get(i));
                 }
             }

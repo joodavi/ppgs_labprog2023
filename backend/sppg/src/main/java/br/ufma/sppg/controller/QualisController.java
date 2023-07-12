@@ -168,34 +168,45 @@ public class QualisController {
     @GetMapping(value = "/{idPrograma}/{anoIni}/{anoFim}")
     public ResponseEntity obterQualisPorAno(
             @PathVariable Integer idPrograma,
-            @PathVariable Integer anoIni, 
+            @PathVariable Integer anoIni,
             @PathVariable Integer anoFim) {
+
         try {
             List<Producao> producoes = service.obterProducoes(idPrograma, anoIni, anoFim);
-            List<List<Integer>> qualis = new ArrayList<List<Integer>>();
-            for (int i = 0;i<4;i++) {
-                qualis.add(new ArrayList<Integer>(Collections.nCopies(anoFim-anoIni+1, 0)));
+            List<List<Integer>> qualis = new ArrayList<>();
+
+            for (int i = 0; i < 4; i++) {
+                qualis.add(new ArrayList<>(Collections.nCopies(anoFim - anoIni + 1, 0)));
             }
+
             for (Producao prod : producoes) {
-                if (prod.getAno()>=anoIni && prod.getAno()<=anoFim) {
-                    if (prod.getTipo()!=null){
-                            if (prod.getQualis() != null) {
-                                if (prod.getQualis().equals("A1")) {
-                                    qualis.get(0).set(anoFim-prod.getAno(), qualis.get(0).get(anoFim-prod.getAno())+1);
-                                } else if (prod.getQualis().equals("A2")) {
-                                    qualis.get(1).set(anoFim-prod.getAno(), qualis.get(1).get(anoFim-prod.getAno())+1);
-                                } else if (prod.getQualis().equals("A3")) {
-                                    qualis.get(2).set(anoFim-prod.getAno(), qualis.get(2).get(anoFim-prod.getAno())+1);
-                                } else if (prod.getQualis().equals("A4")) {
-                                    qualis.get(3).set(anoFim-prod.getAno(), qualis.get(3).get(anoFim-prod.getAno())+1);
-                                }
-                            }
+                if (prod.getAno() >= anoIni && prod.getAno() <= anoFim) {
+                    if (prod.getTipo() != null && prod.getQualis() != null) {
+                        int index = getIndexFromQualis(prod.getQualis());
+
+                        if (index != -1) {
+                            qualis.get(index).set(anoFim - prod.getAno(),
+                                    qualis.get(index).get(anoFim - prod.getAno()) + 1);
                         }
-                    }   
+                    }
                 }
+            }
+
             return ResponseEntity.ok(qualis);
         } catch (ServicoRuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    private int getIndexFromQualis(String qualisValue) {
+        String[] qualisArray = { "A1", "A2", "A3", "A4" };
+
+        for (int i = 0; i < qualisArray.length; i++) {
+            if (qualisArray[i].equals(qualisValue)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 }

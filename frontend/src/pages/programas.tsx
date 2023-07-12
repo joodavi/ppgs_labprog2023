@@ -53,7 +53,7 @@ export default function Programas() {
 
     // set filter
     const [programaId, setProgramaId] = useState(15)
-    const [anoInicial, setAnoInicial] = useState(2020)
+    const [anoInicial, setAnoInicial] = useState(1990)
     const [anoFinal, setAnoFinal] = useState(2023)
 
     // set props grafico
@@ -144,43 +144,6 @@ export default function Programas() {
         getDadosGraficoProgramaProducoes()
     }, [anoInicial, anoFinal])
 
-    const dadosOrdenados = docentesProducoes.slice().sort((a, b) =>
-        a.docente.nome.localeCompare(b.docente.nome)
-    )
-
-    const conteudoTabela = (
-        <>
-            <thead>
-                <tr className="border-b-2">
-                    <td className='bg-slate-700 p-4'>Docentes</td>
-                    <td className='bg-slate-700 p-4 text-center'>A1</td>
-                    <td className='bg-slate-700 p-4 text-center'>A2</td>
-                    <td className='bg-slate-700 p-4 text-center'>A3</td>
-                    <td className='bg-slate-700 p-4 text-center'>A4</td>
-                    <td className='bg-slate-700 p-4 text-center'>B1</td>
-                    <td className='bg-slate-700 p-4 text-center'>B2</td>
-                    <td className='bg-slate-700 p-4 text-center'>B3</td>
-                    <td className='bg-slate-700 p-4 text-center border-r-2'>B4</td>
-                </tr>
-            </thead>
-            <tbody>
-                {dadosOrdenados.map((item, index) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-slate-600' : 'bg-slate-700'}>
-                        <td className='p-4'>{item.docente.nome}</td>
-                        {item.qualis.map((qualisItem) => (
-                            <td className='text-center'>{qualisItem}</td>
-                        ))}
-                        <td className='border-l-2 text-center'>
-                            <Link to={`docente`} className='underline'>
-                                Detalhar...
-                            </Link>
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </>
-    )
-
     function handleSelectedPrograma(event: any) {
         setProgramaSelected(event.target.value)
     }
@@ -240,7 +203,43 @@ export default function Programas() {
             },
         ]
     }
+    
+    const dadosOrdenados = docentesProducoes.slice().sort((a, b) =>
+        a.docente.nome.localeCompare(b.docente.nome)
+    )
 
+    const conteudoTabela = (
+        <>
+            <thead>
+                <tr className="border-b-2">
+                    <td className='bg-slate-700 p-4'>Docentes</td>
+                    <td className='bg-slate-700 p-4 text-center'>A1</td>
+                    <td className='bg-slate-700 p-4 text-center'>A2</td>
+                    <td className='bg-slate-700 p-4 text-center'>A3</td>
+                    <td className='bg-slate-700 p-4 text-center'>A4</td>
+                    <td className='bg-slate-700 p-4 text-center'>B1</td>
+                    <td className='bg-slate-700 p-4 text-center'>B2</td>
+                    <td className='bg-slate-700 p-4 text-center'>B3</td>
+                    <td className='bg-slate-700 p-4 text-center border-r-2'>B4</td>
+                </tr>
+            </thead>
+            <tbody>
+                {dadosOrdenados.map((item, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-slate-600' : 'bg-slate-700'}>
+                        <td className='p-4'>{item.docente.nome}</td>
+                        {item.qualis.map((qualisItem) => (
+                            <td className='text-center'>{qualisItem}</td>
+                        ))}
+                        <td className='border-l-2 text-center'>
+                            <Link to={`docente`} className='underline'>
+                                Detalhar...
+                            </Link>
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </>
+    )
 
     return (
         <div className='bg-slate-800 flex flex-col items-center h-max w-full py-4'>

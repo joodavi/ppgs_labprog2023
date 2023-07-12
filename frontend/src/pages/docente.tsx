@@ -12,7 +12,10 @@ interface DocenteOrientacoes {
     orientacaoDiscente: string;
     orientacaoTitulo: string;
     orientacaoAno: number;
-    orientacaoStatus: string;
+}
+
+interface DocenteOrientacoesTabela {
+    dados: DocenteOrientacoes[]
 }
 
 ChartJS.register(
@@ -23,52 +26,6 @@ ChartJS.register(
     Tooltip,
     Legend
 );
-
-const orientacoes = [
-    {
-        discente: 'João Davi Lima dos Santos', titulo: "Dissertação", tipo: "Mestrado", ano: 2022
-    },
-    {
-        discente: 'Maria Clara Sousa Silva de Almeida Mendes', titulo: "TCC 1", tipo: "Doutorado", ano: 2022
-    },
-    {
-        discente: 'Aluno 3', titulo: "PIBIC 1", tipo: "Pós-Doutorado", ano: 2022
-    },
-    {
-        discente: 'Aluno 4', titulo: "Dissertação 2", tipo: "Mestrado", ano: 2021
-    },
-    {
-        discente: 'Aluno 5', titulo: "TCC 2", tipo: "Mestrado", ano: 2021
-    },
-    {
-        discente: 'Aluno 6', titulo: "PIBIC 2", tipo: "Mestrado", ano: 2021
-    }
-]
-
-// const colunasTabelaOrientacoes = (
-//     <>
-//         <thead>
-//         <tr className="border-b-2">
-//         <td className='bg-slate-600 p-4 w-2/5'>Discentes</td>
-//         <td className='bg-slate-700 p-4 text-center'>Título</td>
-//         <td className='bg-slate-600 p-4 text-center w-2/12'>Tipo</td>
-//         <td className='bg-slate-700 p-4 text-center w-1/12'>Ano</td>
-//     </tr>
-//     </thead>
-//     <tbody>
-//         {ori}
-//     </tbody>
-//     </>
-// )
-
-const conteudoTabelaOrientacoes = orientacoes.map((i) =>
-    <tr>
-        <td className='bg-slate-600 p-4 text-left'>{i.discente}</td>
-        <td className='bg-slate-700 p-4 text-left'>{i.titulo}</td>
-        <td className='bg-slate-600 p-4 text-center'>{i.tipo}</td>
-        <td className='bg-slate-700 p-4 text-center'>{i.ano}</td>
-    </tr>
-)
 
 const artigos = [
     {
@@ -85,26 +42,6 @@ const artigos = [
     },
 ]
 
-const colunasTabelaArtigos = (
-    <tr className="border-b-2">
-        <td className='bg-slate-600 p-4'>Título</td>
-        <td className='bg-slate-700 p-4 text-center w-2/12'>Local</td>
-        <td className='bg-slate-600 p-4 text-center w-2/12'>Tipo</td>
-        <td className='bg-slate-700 p-4 text-center w-1/12'>Qualis</td>
-        <td className='bg-slate-600 p-4 text-center w-1/12'>Ano</td>
-    </tr>
-)
-
-const conteudoTabelaArtigos = artigos.map((i) =>
-    <tr>
-        <td className='bg-slate-600 p-4'>{i.titulo}</td>
-        <td className='bg-slate-700 p-4 text-center'>{i.local}</td>
-        <td className='bg-slate-600 p-4 text-center'>{i.tipo}</td>
-        <td className='bg-slate-700 p-4 text-center'>{i.qualis}</td>
-        <td className='bg-slate-600 p-4 text-center'>{i.ano}</td>
-    </tr>
-)
-
 const tecnicas = [
     {
         titulo: 'Palestra', tipo: "Palestra", ano: 2022
@@ -114,35 +51,19 @@ const tecnicas = [
     }
 ]
 
-const colunasTabelaTecnicas = (
-    <tr className="border-b-2">
-        <td className='bg-slate-600 p-4'>Título</td>
-        <td className='bg-slate-700 p-4 text-center w-2/12'>Tipo</td>
-        <td className='bg-slate-600 p-4 text-center w-1/12'>Ano</td>
-    </tr>
-)
-
-const conteudoTabelaTecnicas = tecnicas.map((i) =>
-    <tr>
-        <td className='bg-slate-600 p-4'>{i.titulo}</td>
-        <td className='bg-slate-700 p-4 text-center'>{i.tipo}</td>
-        <td className='bg-slate-600 p-4 text-center'>{i.ano}</td>
-    </tr>
-)
-
 export default function Docente() {
     // set docente
     const [docenteId, setDocenteId] = useState(15)
     const [docenteNome, setDocenteNome] = useState('')
     const [docenteLattes, setDocenteLattes] = useState('')
-    const [docenteProducoes, setDocenteProducoes] = useState(0)
+    const [docenteProducoesTotal, setDocenteProducoesTotal] = useState(0)
 
     // set filter
     const [anoInicial, setAnoInicial] = useState(2020)
     const [anoFinal, setAnoFinal] = useState(2023)
 
     // set orientacoes docente
-    const [docenteOrientacao, setDocenteOrientacao] = useState<DocenteOrientacoes[]>([])
+    const [docenteOrientacoes, setDocenteOrientacoes] = useState<DocenteOrientacoes[]>([])
 
     // set props grafico
     const options = setupGraphics.options
@@ -168,7 +89,7 @@ export default function Docente() {
             try {
                 const response = await axios.get(`http://localhost:8080/api/docente/obterOrientacoes/${docenteId}/${anoInicial}/${anoFinal}`)
 
-                setDocenteOrientacao(response.data)
+                setDocenteOrientacoes(response.data)
             } catch (e) {
                 console.log("Erro", e)
             }
@@ -182,7 +103,7 @@ export default function Docente() {
             try {
                 const response = await axios.get(`http://localhost:8080/api/docente/obterProducoes/${docenteId}/${anoInicial}/${anoFinal}`)
 
-                setDocenteProducoes(response.data.length)
+                setDocenteProducoesTotal(response.data.length)
             } catch (e) {
                 console.log("Erro", e)
             }
@@ -195,7 +116,7 @@ export default function Docente() {
         getDocenteData()
         getDocenteOrientacoes()
         getDocenteProducoes()
-    }, [])
+    }, [anoInicial, anoFinal])
 
     function handleAnoInicial(event: any) {
         setAnoInicial(event.target.value)
@@ -209,7 +130,6 @@ export default function Docente() {
         event.preventDefault()
         getDocenteData()
         getDocenteOrientacoes()
-        console.log(docenteOrientacao)
     }
 
     function getLabels() {
@@ -255,19 +175,65 @@ export default function Docente() {
         <>
             <thead>
                 <tr className="border-b-2">
-                    <td className='bg-slate-600 p-4 w-2/5'>Discentes</td>
+                    <td className='bg-slate-700 p-4 w-2/5'>Discentes</td>
                     <td className='bg-slate-700 p-4 text-center'>Título</td>
-                    <td className='bg-slate-600 p-4 text-center w-2/12'>Tipo</td>
+                    <td className='bg-slate-700 p-4 text-center w-2/12'>Tipo</td>
                     <td className='bg-slate-700 p-4 text-center w-1/12'>Ano</td>
                 </tr>
             </thead>
             <tbody>
-                {docenteOrientacao.map((item, index) => (
+                {docenteOrientacoes.map((item, index) => (
                     <tr key={index} className={index % 2 === 0 ? 'bg-slate-600' : 'bg-slate-700'}>
-                        <td>{item.orientacaoDiscente}</td>
-                        <td>{item.orientacaoTitulo}</td>
+                        <td className='p-4'>{item.orientacaoDiscente}</td>
+                        <td className='p-4'>{item.orientacaoTitulo}</td>
+                        <td className='p-4'>{item.orientacaoTipo}</td>
+                        <td className='p-4'>{item.orientacaoAno}</td>
                     </tr>
                 ))}
+            </tbody>
+        </>
+    )
+
+    const conteudoTabelaTecnicas = (
+        <>
+            <thead>
+                <tr className="border-b-2">
+                    <td className='bg-slate-600 p-4'>Título</td>
+                    <td className='bg-slate-700 p-4 text-center w-2/12'>Tipo</td>
+                    <td className='bg-slate-600 p-4 text-center w-1/12'>Ano</td>
+                </tr>
+            </thead>
+            <tbody>
+                {tecnicas.map((item) => (
+                    <tr>
+                        <td className='bg-slate-600 p-4'>{item.titulo}</td>
+                        <td className='bg-slate-700 p-4 text-center'>{item.tipo}</td>
+                        <td className='bg-slate-600 p-4 text-center'>{item.ano}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </>
+    )
+
+    const conteudoTabelaArtigos = artigos.map((i) =>
+        <>
+            <thead>
+                <tr className="border-b-2">
+                    <td className='bg-slate-600 p-4'>Título</td>
+                    <td className='bg-slate-700 p-4 text-center w-2/12'>Local</td>
+                    <td className='bg-slate-600 p-4 text-center w-2/12'>Tipo</td>
+                    <td className='bg-slate-700 p-4 text-center w-1/12'>Qualis</td>
+                    <td className='bg-slate-600 p-4 text-center w-1/12'>Ano</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td className='bg-slate-600 p-4'>{i.titulo}</td>
+                    <td className='bg-slate-700 p-4 text-center'>{i.local}</td>
+                    <td className='bg-slate-600 p-4 text-center'>{i.tipo}</td>
+                    <td className='bg-slate-700 p-4 text-center'>{i.qualis}</td>
+                    <td className='bg-slate-600 p-4 text-center'>{i.ano}</td>
+                </tr>
             </tbody>
         </>
     )
@@ -314,16 +280,16 @@ export default function Docente() {
                 </form>
                 <h2 className='text-white font-semibold text-xl mb-3'>Indicadores</h2>
                 <div className='flex justify-between'>
-                    <Indicadores color='bg-gray-400' quantidade={docenteProducoes} titulo='Total Produções' />
+                    <Indicadores color='bg-gray-400' quantidade={docenteProducoesTotal} titulo='Total Produções' />
                     <Indicadores color='bg-cyan-600' quantidade={220} titulo='I Geral' />
                     <Indicadores color='bg-green-600' quantidade={220} titulo='I Restrito' />
                     <Indicadores color='bg-amber-400' quantidade={220} titulo='I Não Restrito' />
                 </div>
-                {/* <Bar data={dados} options={options} />
-                <Bar data={dados} options={options} /> */}
+                <Bar data={dados} options={options} />
+                {/* <Bar data={dados} options={options} /> */}
                 <Tabela title="Orientações" conteudoTabela={conteudoTabelaOrientacoes} />
-                {/* <Tabela title="Artigos" colunasTabela={colunasTabelaArtigos} conteudoTabela={conteudoTabelaArtigos} />
-                <Tabela title="Técnicas" colunasTabela={colunasTabelaTecnicas} conteudoTabela={conteudoTabelaTecnicas} /> */}
+                <Tabela title="Técnicas" conteudoTabela={conteudoTabelaTecnicas} />
+                <Tabela title="Artigos" conteudoTabela={conteudoTabelaArtigos} />
             </div>
         </div>
     )
